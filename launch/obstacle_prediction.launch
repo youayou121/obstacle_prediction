@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<launch>
+
+    <node name="obstacle_prediction" pkg="obstacle_prediction" type="obstacle_prediction" output="screen">
+        <remap from="/global_costmap" to="/move_base/global_costmap/costmap"/>
+    </node>
+    
+
+</launch>
