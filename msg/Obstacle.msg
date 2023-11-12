@@ -1,4 +1,5 @@
 int32 id
+int32 point_num
 float32 length
 float32 width
 geometry_msgs/Point position

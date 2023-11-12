@@ -427,12 +427,8 @@ void kf_tracker(const sensor_msgs::PointCloud2 input)
             marker.pose.position.y = mypcl_it->y;
             marker.pose.position.z = 0.375;
             obs_markers.markers.push_back(marker);
-            // float meas[4] = {mypcl_it->x, mypcl_it->y, (mypcl_it->dx) / dt, (mypcl_it->dy) / dt};
-            // float meas[4] = {mypcl_it->x, mypcl_it->y, mypcl_it->dx, mypcl_it->dy};
             float meas[2] = {mypcl_it->x, mypcl_it->y};
             Mat measMat = cv::Mat(2, 1, CV_32F, meas);
-            // cout << dt << endl;
-            // cout << measMat << endl;
             KF_v.at(mypcl_it->id).correct(measMat);
             flag++;
           }
