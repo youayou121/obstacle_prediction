@@ -242,6 +242,7 @@ void kf_tracker()
         obstacle.position.z = 0.0;
         obstacle.length= max_x - min_x + 0.1;
         obstacle.width = max_y - min_y + 0.1;
+        obstacle.point_num = ptid_it->indices.size();
         curr_obst_arr.obstacles.push_back(obstacle);
         id++;
       }
@@ -322,7 +323,8 @@ void kf_tracker()
         }
       }
       pre_obst_arr.obstacles = curr_obst_arr.obstacles;
-      curr_obst_arr.Header.frame_id = "curr";
+      curr_obst_arr.Header.frame_id = "map";
+      curr_obst_arr.Header.stamp = ros::Time::now();
       pub_obstacles.publish(curr_obst_arr);
       first_frame = false;
       pre_time = curr_time;
