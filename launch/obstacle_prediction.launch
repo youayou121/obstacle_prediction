@@ -3,6 +3,8 @@
 
     <node name="obstacle_prediction" pkg="obstacle_prediction" type="obstacle_prediction" output="screen">
         <remap from="/global_costmap" to="/move_base/global_costmap/costmap"/>
+        <remap from="/local_costmap" to="/move_base/local_costmap/costmap"/>
+        
     </node>
     
 

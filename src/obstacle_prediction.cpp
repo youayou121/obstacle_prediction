@@ -24,6 +24,7 @@ ros::Publisher pub_cloud_filtered;
 ros::Publisher pub_pos;
 ros::Publisher pub_markers;
 ros::Publisher pub_obstacles;
+ros::Publisher pub_local_costmap;
 pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_local(new pcl::PointCloud<pcl::PointXYZ>);
 pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_global(new pcl::PointCloud<pcl::PointXYZ>);
 pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered(new pcl::PointCloud<pcl::PointXYZ>);
@@ -79,16 +80,46 @@ void visulization_method()
   pub_markers.publish(obst_markers);
 }
 
-bool sort_x(obstacle_prediction::Obstacle o1, obstacle_prediction::Obstacle o2)
+void pub_local_costmap_method()
 {
-  if (o1.position.x < o2.position.x)
+  nav_msgs::OccupancyGrid local_costmap;
+  if (sub_map)
   {
-    return true;
+    local_costmap.header.frame_id = "map";
+    local_costmap.header.stamp.ros::Time::now();
+    local_costmap.info = global_costmap.info;
+    local_costmap.data.resize(global_costmap.data.size());
+    for (auto obst:curr_obst_arr.obstacles)
+    {
+      float x = obst.position.x;
+      float y = obst.position.y;
+      int mx = (x - global_costmap.info.origin.position.x) / global_costmap.info.resolution;
+      int my = (y - global_costmap.info.origin.position.y) / global_costmap.info.resolution;
+      
+      int size_x = obst.length/global_costmap.info.resolution/2;
+      int size_y = obst.width/global_costmap.info.resolution/2;
+      for(int mx_i = mx-size_x;mx_i<=mx+size_x;mx_i++)
+      {
+        for(int my_i = my-size_y;my_i <= my+size_y;my_i++)
+        {
+          int index = my_i * global_costmap.info.width + mx_i;
+          if(index>=0&&index<local_costmap.data.size())
+          {
+            local_costmap.data[index] = 100;
+          }
+        }
+      }
+      
+    }
   }
   else
   {
-    return false;
-  }
+    local_costmap.header.frame_id = "map";
+    local_costmap.header.stamp.ros::Time::now();
+  } 
+  
+  
+  pub_local_costmap.publish(local_costmap);
 }
 
 bool is_static(int i)
@@ -383,8 +414,8 @@ void scan_cb(const sensor_msgs::LaserScanConstPtr scan)
     pub_cloud_filtered.publish(output);
     kf_tracker();
     visulization_method();
-    
   }
+  pub_local_costmap_method();
 }
 
 int main(int argc, char **argv)
@@ -398,6 +429,7 @@ int main(int argc, char **argv)
   pub_pos = nh.advertise<std_msgs::Float32MultiArray>("/pos", 1);
   pub_markers = nh.advertise<visualization_msgs::MarkerArray>("/obs_markers", 1);
   pub_obstacles = nh.advertise<obstacle_prediction::ObstacleArray>("/obst_arr",1);
+  pub_local_costmap = nh.advertise<nav_msgs::OccupancyGrid>("/local_costmap",1);
   ros::spin();
   return 0;
 }
